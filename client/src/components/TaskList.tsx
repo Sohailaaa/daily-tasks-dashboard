@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Task, deleteTask } from '../store/taskSlice';
 import { AppDispatch, RootState } from '../store';
 import TaskEditDialog from './TaskEditDialog';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 interface TaskListProps {
   tasks: Task[];
@@ -14,11 +14,33 @@ export default function TaskList({ tasks, selectedDate }: TaskListProps) {
   const dispatch = useDispatch<AppDispatch>();
   const { employees } = useSelector((state: RootState) => state.employees);
   const [showOnlyToday, setShowOnlyToday] = useState(false);
+  const [employeeFilter, setEmployeeFilter] = useState('');
+  const [isEmployeeDropdownOpen, setIsEmployeeDropdownOpen] = useState(false);
 
   const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
-  const displayedTasks = showOnlyToday 
-    ? tasks.filter(task => task.from.startsWith(selectedDateStr))
-    : tasks;
+  
+  const filteredEmployees = useMemo(() => {
+    if (!employeeFilter) return [];
+    const lowerFilter = employeeFilter.toLowerCase();
+    return employees.filter(emp => 
+      emp.name.toLowerCase().includes(lowerFilter)
+    ).slice(0, 5); // Limit to 5 suggestions
+  }, [employeeFilter, employees]);
+
+  const filteredTasks = useMemo(() => {
+    let filtered = showOnlyToday 
+      ? tasks.filter(task => task.from.startsWith(selectedDateStr))
+      : tasks;
+
+    if (employeeFilter) {
+      filtered = filtered.filter(task => {
+        const employee = employees.find(emp => emp.employeeId === task.employeeId);
+        return employee?.name.toLowerCase().includes(employeeFilter.toLowerCase());
+      });
+    }
+
+    return filtered;
+  }, [tasks, showOnlyToday, selectedDateStr, employeeFilter, employees]);
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this task?')) {
@@ -50,12 +72,42 @@ export default function TaskList({ tasks, selectedDate }: TaskListProps) {
         </button>
       </div>
 
-      {displayedTasks.length === 0 ? (
+      <div className="relative">
+        <input
+          type="text"
+          value={employeeFilter}
+          onChange={(e) => {
+            setEmployeeFilter(e.target.value);
+            setIsEmployeeDropdownOpen(true);
+          }}
+          onFocus={() => setIsEmployeeDropdownOpen(true)}
+          placeholder="Filter by employee name..."
+          className="w-full p-2 border rounded-md mb-4"
+        />
+        {isEmployeeDropdownOpen && filteredEmployees.length > 0 && (
+          <div className="absolute z-10 w-full bg-background border rounded-md shadow-lg mt-1">
+            {filteredEmployees.map((emp) => (
+              <div
+                key={emp.employeeId}
+                className="p-2 hover:bg-muted cursor-pointer"
+                onClick={() => {
+                  setEmployeeFilter(emp.name);
+                  setIsEmployeeDropdownOpen(false);
+                }}
+              >
+                {emp.name} - {emp.department}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {filteredTasks.length === 0 ? (
         <p className="text-muted-foreground">
           {showOnlyToday ? "No tasks for today." : "No tasks found."}
         </p>
       ) : (
-        displayedTasks.map((task) => {
+        filteredTasks.map((task) => {
           const taskEmployee = employees.find(emp => emp.employeeId === task.employeeId);
           const taskDate = formatTaskDate(task.from);
           const startTime = formatTaskTime(task.from);
