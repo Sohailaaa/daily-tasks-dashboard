@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { useDispatch, useSelector } from 'react-redux';
 import { Task, deleteTask } from '../store/taskSlice';
 import { AppDispatch, RootState } from '../store';
@@ -26,6 +26,16 @@ export default function TaskList({ tasks, selectedDate }: TaskListProps) {
     }
   };
 
+  const formatTaskTime = (isoString: string) => {
+    const date = parseISO(isoString);
+    return format(date, 'HH:mm');
+  };
+
+  const formatTaskDate = (isoString: string) => {
+    const date = parseISO(isoString);
+    return format(date, 'yyyy-MM-dd');
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-4">
@@ -47,6 +57,10 @@ export default function TaskList({ tasks, selectedDate }: TaskListProps) {
       ) : (
         displayedTasks.map((task) => {
           const taskEmployee = employees.find(emp => emp.employeeId === task.employeeId);
+          const taskDate = formatTaskDate(task.from);
+          const startTime = formatTaskTime(task.from);
+          const endTime = formatTaskTime(task.to);
+          
           return (
             <div
               key={task._id}
@@ -55,7 +69,7 @@ export default function TaskList({ tasks, selectedDate }: TaskListProps) {
               <div>
                 <h3 className="font-medium">{task.description}</h3>
                 <div className="text-sm text-muted-foreground">
-                  <p>{format(new Date(task.from), 'yyyy-MM-dd HH:mm')} - {format(new Date(task.to), 'HH:mm')}</p>
+                  <p>{taskDate} {startTime} - {endTime}</p>
                   <p className="text-primary">Employee: {taskEmployee?.name || 'Unknown'}</p>
                 </div>
               </div>

@@ -148,6 +148,8 @@ export default function DailySummary({ selectedDate, onDateChange }: DailySummar
               <div className="space-y-2">
                 {dailyTasks.tasks.map((task) => {
                   const taskEmployee = employees.find(emp => emp.employeeId === task.employeeId);
+                  const fromDate = new Date(task.from);
+                  const toDate = new Date(task.to);
                   return (
                     <div
                       key={task._id}
@@ -156,7 +158,7 @@ export default function DailySummary({ selectedDate, onDateChange }: DailySummar
                       <div>
                         <p className="font-medium">{task.description}</p>
                         <div className="text-sm text-muted-foreground">
-                          <p>{format(new Date(task.from), 'HH:mm')} - {format(new Date(task.to), 'HH:mm')}</p>
+                          <p>{format(fromDate, 'HH:mm')} - {format(toDate, 'HH:mm')}</p>
                           <p className="text-primary">Employee: {taskEmployee?.name || 'Unknown'}</p>
                         </div>
                       </div>

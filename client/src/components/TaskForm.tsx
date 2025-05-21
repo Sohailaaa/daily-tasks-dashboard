@@ -46,11 +46,14 @@ export default function TaskForm({ selectedDate }: TaskFormProps) {
       }
 
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
+      const fromDate = new Date(`${dateStr}T${startTime}`);
+      const toDate = new Date(`${dateStr}T${endTime}`);
+
       const task = {
         employeeId: currentEmployeeId,
         description,
-        from: `${dateStr}T${startTime}:00Z`,
-        to: `${dateStr}T${endTime}:00Z`,
+        from: fromDate.toISOString(),
+        to: toDate.toISOString(),
       };
 
       await dispatch(addTask(task)).unwrap();
