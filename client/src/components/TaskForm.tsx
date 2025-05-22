@@ -18,7 +18,6 @@ export default function TaskForm({ selectedDate }: TaskFormProps) {
   const [loading, setLoading] = useState(false);
 
   const { currentEmployeeId } = useSelector((state: RootState) => state.tasks);
-  const { employees = [] } = useSelector((state: RootState) => state.employees);
 
   // Load employees when component mounts
   useEffect(() => {
