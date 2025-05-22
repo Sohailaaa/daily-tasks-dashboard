@@ -94,7 +94,8 @@ const taskSlice = createSlice({
       })
       .addCase(fetchTasks.fulfilled, (state, action) => {
         state.loading = false;
-        state.tasks = action.payload;
+        // Ensure we're setting an array
+        state.tasks = Array.isArray(action.payload) ? action.payload : [];
         state.error = null;
       })
       .addCase(fetchTasks.rejected, (state, action) => {
@@ -105,6 +106,10 @@ const taskSlice = createSlice({
         state.dailySummary = action.payload.employeeSummaries;
       })
       .addCase(addTask.fulfilled, (state, action) => {
+        // Ensure tasks is an array before trying to push
+        if (!Array.isArray(state.tasks)) {
+          state.tasks = [];
+        }
         state.tasks.push(action.payload);
       })
       .addCase(updateTask.fulfilled, (state, action) => {
@@ -132,4 +137,4 @@ const taskSlice = createSlice({
 });
 
 export const { setCurrentEmployee } = taskSlice.actions;
-export default taskSlice.reducer; 
+export default taskSlice.reducer;
