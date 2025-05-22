@@ -28,6 +28,13 @@ api.interceptors.request.use(
 // Add response interceptor for error handling
 api.interceptors.response.use(
   (response) => {
+    // Validate response data
+    if (response.data === null || response.data === undefined) {
+      console.warn('API Response contains no data:', response);
+      return { ...response, data: [] }; // Return empty array as default
+    }
+
+    // Log successful response
     console.log('API Response:', {
       status: response.status,
       data: response.data,
@@ -44,18 +51,18 @@ api.interceptors.response.use(
     if (error.response) {
       switch (error.response.status) {
         case 400:
-          throw new Error(error.response.data.message || 'Invalid request');
+          throw new Error(error.response.data?.message || 'Invalid request');
         case 404:
           throw new Error('Resource not found');
         case 500:
           throw new Error('Server error - please try again');
         default:
-          throw new Error('An unexpected error occurred');
+          throw new Error(`An unexpected error occurred: ${error.response.status}`);
       }
     } else if (error.request) {
       throw new Error('No response from server - please check your connection');
     } else {
-      throw new Error('Error in request configuration');
+      throw new Error(`Request configuration error: ${error.message}`);
     }
   }
 );

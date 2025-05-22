@@ -28,7 +28,7 @@ export const fetchEmployees = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await employeeApi.getAll();
-      return response.data as Employee[];
+      return Array.isArray(response.data) ? response.data : [];
     } catch (error: any) {
       return rejectWithValue(error.message);
     }

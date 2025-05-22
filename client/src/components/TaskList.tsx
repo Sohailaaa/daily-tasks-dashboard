@@ -13,7 +13,7 @@ interface TaskListProps {
 
 export default function TaskList({ tasks, selectedDate }: TaskListProps) {
   const dispatch = useDispatch<AppDispatch>();
-  const { employees } = useSelector((state: RootState) => state.employees);
+  const { employees = [] } = useSelector((state: RootState) => state.employees);
   const [showOnlyToday, setShowOnlyToday] = useState(false);
   const [employeeFilter, setEmployeeFilter] = useState('');
   const [isEmployeeDropdownOpen, setIsEmployeeDropdownOpen] = useState(false);
@@ -28,21 +28,21 @@ export default function TaskList({ tasks, selectedDate }: TaskListProps) {
     if (!employeeFilter || !Array.isArray(employees)) return [];
     const lowerFilter = employeeFilter.toLowerCase();
     return employees.filter(emp => 
-      emp.name.toLowerCase().includes(lowerFilter)
+      emp?.name?.toLowerCase().includes(lowerFilter)
     ).slice(0, 5); // Limit to 5 suggestions
   }, [employeeFilter, employees]);
 
   const filteredTasks = useMemo(() => {
-    if (!Array.isArray(employees)) return [];
+    if (!Array.isArray(tasks) || !Array.isArray(employees)) return [];
     
     let filtered = showOnlyToday 
-      ? tasks.filter(task => task.from.startsWith(selectedDateStr))
+      ? tasks.filter(task => task?.from?.startsWith(selectedDateStr))
       : tasks;
 
     if (employeeFilter) {
       filtered = filtered.filter(task => {
-        const employee = employees.find(emp => emp.employeeId === task.employeeId);
-        return employee?.name.toLowerCase().includes(employeeFilter.toLowerCase());
+        const employee = employees.find(emp => emp?.employeeId === task?.employeeId);
+        return employee?.name?.toLowerCase().includes(employeeFilter.toLowerCase());
       });
     }
 
