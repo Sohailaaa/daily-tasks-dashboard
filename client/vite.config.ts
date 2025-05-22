@@ -11,13 +11,8 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173,
-    proxy: {
-      '/api': {
-        target: 'http://13.60.148.183:5000',
-        changeOrigin: true,
-      },
-    },
+    port: 3000,
+    host: true,
   },
   optimizeDeps: {
     esbuildOptions: {
@@ -28,6 +23,6 @@ export default defineConfig({
   },
   define: {
     'process.env': {},
-    global: {}
+    global: 'globalThis'
   }
 })

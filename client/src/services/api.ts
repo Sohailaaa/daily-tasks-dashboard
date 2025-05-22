@@ -3,7 +3,7 @@ import type { Employee } from '../store/employeeSlice';
 import type { Task } from '../store/taskSlice';
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: 'http://13.60.148.183:5000/api',
   headers: {
     'Content-Type': 'application/json',
   },

@@ -11,8 +11,12 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors());
+// Configure CORS
+app.use(cors({
+  origin: 'http://13.60.148.183:3000',
+  credentials: true
+}));
+
 app.use(express.json());
 
 // Routes
