@@ -3,7 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Task, deleteTask } from '../store/taskSlice';
 import { AppDispatch, RootState } from '../store';
 import TaskEditDialog from './TaskEditDialog';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { fetchEmployees } from '../store/employeeSlice';
 
 interface TaskListProps {
   tasks: Task[];
@@ -12,15 +13,19 @@ interface TaskListProps {
 
 export default function TaskList({ tasks, selectedDate }: TaskListProps) {
   const dispatch = useDispatch<AppDispatch>();
-  const { employees } = useSelector((state: RootState) => state.employees);
+  const { employees, loading } = useSelector((state: RootState) => state.employees);
   const [showOnlyToday, setShowOnlyToday] = useState(false);
   const [employeeFilter, setEmployeeFilter] = useState('');
   const [isEmployeeDropdownOpen, setIsEmployeeDropdownOpen] = useState(false);
 
+  useEffect(() => {
+    dispatch(fetchEmployees());
+  }, [dispatch]);
+
   const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
   
   const filteredEmployees = useMemo(() => {
-    if (!employeeFilter) return [];
+    if (!employeeFilter || !Array.isArray(employees)) return [];
     const lowerFilter = employeeFilter.toLowerCase();
     return employees.filter(emp => 
       emp.name.toLowerCase().includes(lowerFilter)
@@ -28,6 +33,8 @@ export default function TaskList({ tasks, selectedDate }: TaskListProps) {
   }, [employeeFilter, employees]);
 
   const filteredTasks = useMemo(() => {
+    if (!Array.isArray(employees)) return [];
+    
     let filtered = showOnlyToday 
       ? tasks.filter(task => task.from.startsWith(selectedDateStr))
       : tasks;

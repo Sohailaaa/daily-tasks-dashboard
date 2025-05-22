@@ -46,7 +46,7 @@ export default function DailySummary({ selectedDate, onDateChange }: DailySummar
   const currentEmployee = employees.find(emp => emp.employeeId === currentEmployeeId);
 
   const filteredEmployees = useMemo(() => {
-    if (!employeeFilter) return [];
+    if (!employeeFilter || !Array.isArray(employees)) return [];
     const lowerFilter = employeeFilter.toLowerCase();
     return employees.filter(emp => 
       emp.name.toLowerCase().includes(lowerFilter)
