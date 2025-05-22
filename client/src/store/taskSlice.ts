@@ -79,38 +79,10 @@ export const fetchTasksByEmployeeName = createAsyncThunk(
   }
 );
 
-const calculateTaskHours = (task: Task): number => {
-  const start = new Date(task.from);
-  const end = new Date(task.to);
-  return (end.getTime() - start.getTime()) / (1000 * 60 * 60);
-};
-
-const updateDailySummary = (state: TaskState, date: string) => {
-  const dayStart = new Date(date);
-  dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(date);
-  dayEnd.setHours(23, 59, 59, 999);
-
-  const dailyTasks = state.tasks.filter(task => {
-    const taskDate = new Date(task.from);
-    return taskDate >= dayStart && taskDate <= dayEnd;
-  });
-
-  const totalHours = dailyTasks.reduce((acc, task) => acc + calculateTaskHours(task), 0);
-  
-  state.dailySummary = {
-    totalHours,
-    remainingHours: Math.max(0, 8 - totalHours),
-  };
-};
-
 const taskSlice = createSlice({
   name: 'tasks',
   initialState,
   reducers: {
-    updateDailySummaryForDate: (state, action) => {
-      // No longer needed as we're using the server's summary
-    },
     setCurrentEmployee: (state, action) => {
       state.currentEmployeeId = action.payload;
     },

@@ -69,6 +69,7 @@ export const taskApi = {
   delete: (id: string) => api.delete(`/tasks/${id}`),
   getDailyEmployeeTasks: (employeeId: string, date: string) => 
     api.get(`/tasks/daily/${employeeId}/${date}`),
+  getByEmployeeName: (name: string) => api.get<Task[]>(`/tasks/employee/${name}`),
 };
 
 // Employee API

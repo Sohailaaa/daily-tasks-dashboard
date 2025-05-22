@@ -20,7 +20,7 @@ export default function TaskEditDialog({ task }: TaskEditDialogProps) {
   );
   const [error, setError] = useState<string | null>(null);
 
-  const { dailySummary, tasks } = useSelector((state: RootState) => state.tasks);
+  const { tasks } = useSelector((state: RootState) => state.tasks);
 
   const calculateDuration = (start: string, end: string): number => {
     const [startHour, startMinute] = start.split(':').map(Number);

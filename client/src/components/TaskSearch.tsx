@@ -1,14 +1,21 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../store';
-import { fetchTasksByEmployeeName } from '../store/taskSlice';
+import { fetchTasksByEmployeeName, Task } from '../store/taskSlice';
 import { format } from 'date-fns';
 import TaskEditDialog from './TaskEditDialog';
+
+interface TaskWithEmployee extends Task {
+  employee?: {
+    name: string;
+  };
+}
 
 export default function TaskSearch() {
   const dispatch = useDispatch<AppDispatch>();
   const [searchName, setSearchName] = useState('');
-  const { tasks, loading, error } = useSelector((state: RootState) => state.tasks);
+  const { tasks: rawTasks, loading, error } = useSelector((state: RootState) => state.tasks);
+  const tasks = rawTasks as TaskWithEmployee[];
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
