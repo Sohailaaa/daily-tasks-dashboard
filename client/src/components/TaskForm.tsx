@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { format } from 'date-fns';
 import { addTask } from '../store/taskSlice';
 import { AppDispatch, RootState } from '../store';
+import { fetchEmployees } from '../store/employeeSlice';
 
 interface TaskFormProps {
   selectedDate: Date;
@@ -17,9 +18,16 @@ export default function TaskForm({ selectedDate }: TaskFormProps) {
   const [loading, setLoading] = useState(false);
 
   const { dailySummary, currentEmployeeId } = useSelector((state: RootState) => state.tasks);
-  const { employees } = useSelector((state: RootState) => state.employees);
+  const { employees = [], loading: employeesLoading } = useSelector((state: RootState) => state.employees);
 
-  const currentEmployee = employees.find(emp => emp.employeeId === currentEmployeeId);
+  // Add useEffect to load employees when component mounts
+  useEffect(() => {
+    dispatch(fetchEmployees());
+  }, [dispatch]);
+
+  const currentEmployee = Array.isArray(employees) 
+    ? employees.find(emp => emp && emp.employeeId === currentEmployeeId) 
+    : undefined;
 
   const calculateDuration = (start: string, end: string): number => {
     const [startHour, startMinute] = start.split(':').map(Number);
@@ -78,7 +86,7 @@ export default function TaskForm({ selectedDate }: TaskFormProps) {
       return false;
     }
 
-    const employeeSummary = dailySummary[currentEmployeeId!];
+    const employeeSummary = currentEmployeeId && dailySummary ? dailySummary[currentEmployeeId] : null;
     const currentTotalHours = employeeSummary ? employeeSummary.totalHours : 0;
     const remainingHours = 8 - currentTotalHours;
 
@@ -98,17 +106,19 @@ export default function TaskForm({ selectedDate }: TaskFormProps) {
         </div>
       )}
 
-      {currentEmployee && (
+      {employeesLoading ? (
+        <div className="p-3 bg-primary/10 rounded-md">
+          <p className="text-sm">Loading employees...</p>
+        </div>
+      ) : currentEmployee ? (
         <div className="p-3 bg-primary/10 rounded-md">
           <p className="font-medium">Adding task for: {currentEmployee.name}</p>
           <p className="text-sm text-muted-foreground">{currentEmployee.department}</p>
         </div>
-      )}
-
-      {!currentEmployee && (
+      ) : (
         <div className="p-3 bg-yellow-100 text-yellow-800 rounded-md text-sm">
           Please select an employee from the dropdown above to add a task
-      </div>
+        </div>
       )}
 
       <div>
@@ -121,7 +131,7 @@ export default function TaskForm({ selectedDate }: TaskFormProps) {
           onChange={(e) => setDescription(e.target.value)}
           className="w-full p-2 border rounded-md"
           required
-          disabled={!currentEmployee}
+          disabled={!currentEmployee || employeesLoading}
         />
       </div>
 
@@ -139,7 +149,7 @@ export default function TaskForm({ selectedDate }: TaskFormProps) {
             }}
             className="w-full p-2 border rounded-md"
             required
-            disabled={!currentEmployee}
+            disabled={!currentEmployee || employeesLoading}
           />
         </div>
 
@@ -156,7 +166,7 @@ export default function TaskForm({ selectedDate }: TaskFormProps) {
             }}
             className="w-full p-2 border rounded-md"
             required
-            disabled={!currentEmployee}
+            disabled={!currentEmployee || employeesLoading}
           />
         </div>
       </div>
@@ -164,7 +174,7 @@ export default function TaskForm({ selectedDate }: TaskFormProps) {
       <button
         type="submit"
         className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
-        disabled={loading || !currentEmployee}
+        disabled={loading || !currentEmployee || employeesLoading}
       >
         {loading ? 'Adding Task...' : 'Add Task'}
       </button>
