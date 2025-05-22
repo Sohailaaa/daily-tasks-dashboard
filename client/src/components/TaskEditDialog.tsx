@@ -1,22 +1,23 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { Task, updateTask, fetchDailySummary } from '../store/taskSlice';
 import { AppDispatch, RootState } from '../store';
 
 interface TaskEditDialogProps {
   task: Task;
+  onUpdate?: () => void;
 }
 
-export default function TaskEditDialog({ task }: TaskEditDialogProps) {
+export default function TaskEditDialog({ task, onUpdate }: TaskEditDialogProps) {
   const dispatch = useDispatch<AppDispatch>();
   const [isOpen, setIsOpen] = useState(false);
   const [description, setDescription] = useState(task.description);
   const [startTime, setStartTime] = useState(
-    format(new Date(task.from), 'HH:mm')
+    format(parseISO(task.from), 'HH:mm')
   );
   const [endTime, setEndTime] = useState(
-    format(new Date(task.to), 'HH:mm')
+    format(parseISO(task.to), 'HH:mm')
   );
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -41,15 +42,15 @@ export default function TaskEditDialog({ task }: TaskEditDialogProps) {
     }
 
     // Calculate total hours excluding current task
-    const currentDate = format(new Date(task.from), 'yyyy-MM-dd');
+    const currentDate = format(parseISO(task.from), 'yyyy-MM-dd');
     const totalHoursExcludingCurrent = tasks
       .filter(t => 
         t._id !== task._id && 
-        format(new Date(t.from), 'yyyy-MM-dd') === currentDate
+        format(parseISO(t.from), 'yyyy-MM-dd') === currentDate
       )
       .reduce((acc, t) => {
-        const start = new Date(t.from);
-        const end = new Date(t.to);
+        const start = parseISO(t.from);
+        const end = parseISO(t.to);
         return acc + (end.getTime() - start.getTime()) / (1000 * 60 * 60);
       }, 0);
 
@@ -73,18 +74,23 @@ export default function TaskEditDialog({ task }: TaskEditDialogProps) {
         return;
       }
 
-      const dateStr = format(new Date(task.from), 'yyyy-MM-dd');
+      const dateStr = format(parseISO(task.from), 'yyyy-MM-dd');
       const updatedTask = {
         employeeId: task.employeeId,
         description,
-        from: `${dateStr}T${startTime}:00Z`,
-        to: `${dateStr}T${endTime}:00Z`,
+        from: new Date(`${dateStr}T${startTime}`).toISOString(),
+        to: new Date(`${dateStr}T${endTime}`).toISOString(),
       };
 
       await dispatch(updateTask({ id: task._id, task: updatedTask })).unwrap();
       
       // Refresh daily summary after updating task
       await dispatch(fetchDailySummary(dateStr)).unwrap();
+      
+      // Call onUpdate callback if provided
+      if (onUpdate) {
+        onUpdate();
+      }
       
       setIsOpen(false);
     } catch (error: any) {

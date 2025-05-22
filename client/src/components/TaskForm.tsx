@@ -74,12 +74,12 @@ export default function TaskForm({ selectedDate }: TaskFormProps) {
 
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
       
-      // Create the task object with better validation
+      // Create the task object with local timezone
       const task = {
         employeeId: currentEmployeeId,
         description: description.trim(),
-        from: `${dateStr}T${startTime}:00Z`,
-        to: `${dateStr}T${endTime}:00Z`,
+        from: new Date(`${dateStr}T${startTime}`).toISOString(),
+        to: new Date(`${dateStr}T${endTime}`).toISOString(),
       };
 
       await dispatch(addTask(task)).unwrap();
