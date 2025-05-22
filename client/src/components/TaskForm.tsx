@@ -30,9 +30,20 @@ export default function TaskForm({ selectedDate }: TaskFormProps) {
     : undefined;
 
   const calculateDuration = (start: string, end: string): number => {
-    const [startHour, startMinute] = start.split(':').map(Number);
-    const [endHour, endMinute] = end.split(':').map(Number);
-    return (endHour - startHour) + (endMinute - startMinute) / 60;
+    // Add safety checks
+    if (!start || !end) {
+      setError('Start time and end time are required');
+      return 0;
+    }
+    
+    try {
+      const [startHour, startMinute] = start.split(':').map(Number);
+      const [endHour, endMinute] = end.split(':').map(Number);
+      return (endHour - startHour) + (endMinute - startMinute) / 60;
+    } catch (err) {
+      setError('Invalid time format');
+      return 0;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,6 +52,16 @@ export default function TaskForm({ selectedDate }: TaskFormProps) {
 
     if (!currentEmployeeId) {
       setError('Please select an employee from the dropdown above');
+      return;
+    }
+    
+    if (!description.trim()) {
+      setError('Description is required');
+      return;
+    }
+    
+    if (!startTime || !endTime) {
+      setError('Start and end times are required');
       return;
     }
 
@@ -54,14 +75,13 @@ export default function TaskForm({ selectedDate }: TaskFormProps) {
       }
 
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
-      const fromDate = new Date(`${dateStr}T${startTime}`);
-      const toDate = new Date(`${dateStr}T${endTime}`);
-
+      
+      // Create the task object with better validation
       const task = {
         employeeId: currentEmployeeId,
-        description,
-        from: fromDate.toISOString(),
-        to: toDate.toISOString(),
+        description: description.trim(),
+        from: `${dateStr}T${startTime}:00Z`,
+        to: `${dateStr}T${endTime}:00Z`,
       };
 
       await dispatch(addTask(task)).unwrap();
@@ -86,98 +106,48 @@ export default function TaskForm({ selectedDate }: TaskFormProps) {
       return false;
     }
 
-    const employeeSummary = currentEmployeeId && dailySummary ? dailySummary[currentEmployeeId] : null;
-    const currentTotalHours = employeeSummary ? employeeSummary.totalHours : 0;
-    const remainingHours = 8 - currentTotalHours;
-
-    if (currentTotalHours + duration > 8) {
-      setError(`Adding this task would exceed the daily limit of 8 hours. Remaining hours: ${remainingHours.toFixed(1)}`);
-      return false;
-    }
-
     return true;
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {error && (
-        <div className="p-3 bg-destructive/10 text-destructive rounded-md text-sm">
-          {error}
-        </div>
-      )}
-
-      {employeesLoading ? (
-        <div className="p-3 bg-primary/10 rounded-md">
-          <p className="text-sm">Loading employees...</p>
-        </div>
-      ) : currentEmployee ? (
-        <div className="p-3 bg-primary/10 rounded-md">
-          <p className="font-medium">Adding task for: {currentEmployee.name}</p>
-          <p className="text-sm text-muted-foreground">{currentEmployee.department}</p>
-        </div>
-      ) : (
-        <div className="p-3 bg-yellow-100 text-yellow-800 rounded-md text-sm">
-          Please select an employee from the dropdown above to add a task
-        </div>
-      )}
-
+    <form onSubmit={handleSubmit}>
       <div>
-        <label className="block text-sm font-medium mb-1">
+        <label>
           Description
+          <input 
+            type="text" 
+            value={description} 
+            onChange={(e) => setDescription(e.target.value)} 
+            disabled={loading}
+          />
         </label>
-        <input
-          type="text"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="w-full p-2 border rounded-md"
-          required
-          disabled={!currentEmployee || employeesLoading}
-        />
       </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Start Time
-          </label>
-          <input
-            type="time"
-            value={startTime}
-            onChange={(e) => {
-              setStartTime(e.target.value);
-              setError(null);
-            }}
-            className="w-full p-2 border rounded-md"
-            required
-            disabled={!currentEmployee || employeesLoading}
+      <div>
+        <label>
+          Start Time
+          <input 
+            type="time" 
+            value={startTime} 
+            onChange={(e) => setStartTime(e.target.value)} 
+            disabled={loading}
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            End Time
-          </label>
-          <input
-            type="time"
-            value={endTime}
-            onChange={(e) => {
-              setEndTime(e.target.value);
-              setError(null);
-            }}
-            className="w-full p-2 border rounded-md"
-            required
-            disabled={!currentEmployee || employeesLoading}
-          />
-        </div>
+        </label>
       </div>
-
-      <button
-        type="submit"
-        className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
-        disabled={loading || !currentEmployee || employeesLoading}
-      >
+      <div>
+        <label>
+          End Time
+          <input 
+            type="time" 
+            value={endTime} 
+            onChange={(e) => setEndTime(e.target.value)} 
+            disabled={loading}
+          />
+        </label>
+      </div>
+      {error && <div style={{ color: 'red' }}>{error}</div>}
+      <button type="submit" disabled={loading}>
         {loading ? 'Adding Task...' : 'Add Task'}
       </button>
     </form>
   );
-} 
+}

@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+// Remove direct axios import
+// import axios from 'axios';
 import { taskApi } from '../services/api';
 
 export interface Task {
@@ -35,14 +36,14 @@ const initialState: TaskState = {
 };
 
 export const fetchTasks = createAsyncThunk('tasks/fetchTasks', async () => {
-  const response = await axios.get('/api/tasks');
+  const response = await taskApi.getAll();
   return response.data;
 });
 
 export const fetchDailySummary = createAsyncThunk(
   'tasks/fetchDailySummary',
   async (date: string) => {
-    const response = await axios.get(`/api/tasks/summary/${date}`);
+    const response = await taskApi.getDailySummary(date);
     return response.data;
   }
 );
@@ -50,7 +51,8 @@ export const fetchDailySummary = createAsyncThunk(
 export const addTask = createAsyncThunk(
   'tasks/addTask',
   async (task: Omit<Task, '_id'>) => {
-    const response = await axios.post('/api/tasks', task);
+    // Use taskApi instead of direct axios
+    const response = await taskApi.create(task);
     return response.data;
   }
 );
@@ -58,7 +60,7 @@ export const addTask = createAsyncThunk(
 export const updateTask = createAsyncThunk(
   'tasks/updateTask',
   async ({ id, task }: { id: string; task: Omit<Task, '_id'> }) => {
-    const response = await axios.put(`/api/tasks/${id}`, task);
+    const response = await taskApi.update(id, task);
     return response.data;
   }
 );
@@ -66,7 +68,7 @@ export const updateTask = createAsyncThunk(
 export const deleteTask = createAsyncThunk(
   'tasks/deleteTask',
   async (id: string) => {
-    await axios.delete(`/api/tasks/${id}`);
+    await taskApi.delete(id);
     return id;
   }
 );
