@@ -17,17 +17,13 @@ export default function TaskForm({ selectedDate }: TaskFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const { dailySummary, currentEmployeeId } = useSelector((state: RootState) => state.tasks);
-  const { employees = [], loading: employeesLoading } = useSelector((state: RootState) => state.employees);
+  const { currentEmployeeId } = useSelector((state: RootState) => state.tasks);
+  const { employees = [] } = useSelector((state: RootState) => state.employees);
 
-  // Add useEffect to load employees when component mounts
+  // Load employees when component mounts
   useEffect(() => {
     dispatch(fetchEmployees());
   }, [dispatch]);
-
-  const currentEmployee = Array.isArray(employees) 
-    ? employees.find(emp => emp && emp.employeeId === currentEmployeeId) 
-    : undefined;
 
   const calculateDuration = (start: string, end: string): number => {
     // Add safety checks
@@ -35,7 +31,7 @@ export default function TaskForm({ selectedDate }: TaskFormProps) {
       setError('Start time and end time are required');
       return 0;
     }
-    
+
     try {
       const [startHour, startMinute] = start.split(':').map(Number);
       const [endHour, endMinute] = end.split(':').map(Number);
@@ -54,7 +50,7 @@ export default function TaskForm({ selectedDate }: TaskFormProps) {
       setError('Please select an employee from the dropdown above');
       return;
     }
-    
+     
     if (!description.trim()) {
       setError('Description is required');
       return;
