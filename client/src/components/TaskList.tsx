@@ -13,7 +13,7 @@ interface TaskListProps {
 
 export default function TaskList({ tasks, selectedDate }: TaskListProps) {
   const dispatch = useDispatch<AppDispatch>();
-  const { employees, loading } = useSelector((state: RootState) => state.employees);
+  const { employees } = useSelector((state: RootState) => state.employees);
   const [showOnlyToday, setShowOnlyToday] = useState(false);
   const [employeeFilter, setEmployeeFilter] = useState('');
   const [isEmployeeDropdownOpen, setIsEmployeeDropdownOpen] = useState(false);
