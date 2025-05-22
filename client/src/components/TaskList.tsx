@@ -1,6 +1,6 @@
 import { format, parseISO } from 'date-fns';
 import { useDispatch, useSelector } from 'react-redux';
-import { Task, deleteTask } from '../store/taskSlice';
+import { Task, deleteTask, fetchDailySummary } from '../store/taskSlice';
 import { AppDispatch, RootState } from '../store';
 import TaskEditDialog from './TaskEditDialog';
 import { useState, useMemo, useEffect } from 'react';
@@ -17,6 +17,7 @@ export default function TaskList({ tasks, selectedDate }: TaskListProps) {
   const [showOnlyToday, setShowOnlyToday] = useState(false);
   const [employeeFilter, setEmployeeFilter] = useState('');
   const [isEmployeeDropdownOpen, setIsEmployeeDropdownOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     dispatch(fetchEmployees());
@@ -49,9 +50,18 @@ export default function TaskList({ tasks, selectedDate }: TaskListProps) {
     return filtered;
   }, [tasks, showOnlyToday, selectedDateStr, employeeFilter, employees]);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (taskId: string, taskDate: string) => {
     if (window.confirm('Are you sure you want to delete this task?')) {
-      await dispatch(deleteTask(id));
+      setLoading(true);
+      try {
+        await dispatch(deleteTask(taskId)).unwrap();
+        // Refresh daily summary after deleting task
+        await dispatch(fetchDailySummary(taskDate)).unwrap();
+      } catch (error) {
+        console.error('Error deleting task:', error);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -74,6 +84,7 @@ export default function TaskList({ tasks, selectedDate }: TaskListProps) {
         <button
           onClick={() => setShowOnlyToday(!showOnlyToday)}
           className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+          disabled={loading}
         >
           {showOnlyToday ? "Show All Tasks" : "Show Today's Tasks"}
         </button>
@@ -90,6 +101,7 @@ export default function TaskList({ tasks, selectedDate }: TaskListProps) {
           onFocus={() => setIsEmployeeDropdownOpen(true)}
           placeholder="Filter by employee name..."
           className="w-full p-2 border rounded-md mb-4"
+          disabled={loading}
         />
         {isEmployeeDropdownOpen && filteredEmployees.length > 0 && (
           <div className="absolute z-10 w-full bg-background border rounded-md shadow-lg mt-1">
@@ -109,41 +121,44 @@ export default function TaskList({ tasks, selectedDate }: TaskListProps) {
         )}
       </div>
 
-      {filteredTasks.length === 0 ? (
+      {!filteredTasks.length ? (
         <p className="text-muted-foreground">
           {showOnlyToday ? "No tasks for today." : "No tasks found."}
         </p>
       ) : (
-        filteredTasks.map((task) => {
-          const taskEmployee = employees.find(emp => emp.employeeId === task.employeeId);
-          const taskDate = formatTaskDate(task.from);
-          const startTime = formatTaskTime(task.from);
-          const endTime = formatTaskTime(task.to);
-          
-          return (
-            <div
-              key={task._id}
-              className="flex items-center justify-between p-4 bg-background rounded-lg border"
-            >
-              <div>
-                <h3 className="font-medium">{task.description}</h3>
-                <div className="text-sm text-muted-foreground">
-                  <p>{taskDate} {startTime} - {endTime}</p>
-                  <p className="text-primary">Employee: {taskEmployee?.name || 'Unknown'}</p>
+        <div className="space-y-2">
+          {filteredTasks.map((task) => {
+            const taskEmployee = employees.find(emp => emp.employeeId === task.employeeId);
+            const taskDate = formatTaskDate(task.from);
+            const startTime = formatTaskTime(task.from);
+            const endTime = formatTaskTime(task.to);
+            
+            return (
+              <div
+                key={task._id}
+                className="flex items-center justify-between p-4 bg-background rounded-lg border"
+              >
+                <div>
+                  <h3 className="font-medium">{task.description}</h3>
+                  <div className="text-sm text-muted-foreground">
+                    <p>{taskDate} {startTime} - {endTime}</p>
+                    <p className="text-primary">Employee: {taskEmployee?.name || 'Unknown'}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <TaskEditDialog task={task} />
+                  <button
+                    onClick={() => handleDelete(task._id, taskDate)}
+                    className="px-2 py-1 text-sm text-destructive hover:text-destructive-foreground hover:bg-destructive rounded"
+                    disabled={loading}
+                  >
+                    {loading ? 'Deleting...' : 'Delete'}
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <TaskEditDialog task={task} />
-                <button
-                  onClick={() => handleDelete(task._id)}
-                  className="px-2 py-1 text-sm text-destructive hover:text-destructive-foreground hover:bg-destructive rounded"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          );
-        })
+            );
+          })}
+        </div>
       )}
     </div>
   );

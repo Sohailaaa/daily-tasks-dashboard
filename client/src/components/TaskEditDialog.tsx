@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { format } from 'date-fns';
-import { Task, updateTask } from '../store/taskSlice';
+import { Task, updateTask, fetchDailySummary } from '../store/taskSlice';
 import { AppDispatch, RootState } from '../store';
 
 interface TaskEditDialogProps {
@@ -19,6 +19,7 @@ export default function TaskEditDialog({ task }: TaskEditDialogProps) {
     format(new Date(task.to), 'HH:mm')
   );
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const { tasks } = useSelector((state: RootState) => state.tasks);
 
@@ -63,25 +64,33 @@ export default function TaskEditDialog({ task }: TaskEditDialogProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
-    const duration = calculateDuration(startTime, endTime);
-    if (!validateTask(duration)) {
-      return;
-    }
-
-    const dateStr = format(new Date(task.from), 'yyyy-MM-dd');
-    const updatedTask = {
-      employeeId: task.employeeId,
-      description,
-      from: `${dateStr}T${startTime}:00Z`,
-      to: `${dateStr}T${endTime}:00Z`,
-    };
+    setLoading(true);
 
     try {
+      const duration = calculateDuration(startTime, endTime);
+      if (!validateTask(duration)) {
+        setLoading(false);
+        return;
+      }
+
+      const dateStr = format(new Date(task.from), 'yyyy-MM-dd');
+      const updatedTask = {
+        employeeId: task.employeeId,
+        description,
+        from: `${dateStr}T${startTime}:00Z`,
+        to: `${dateStr}T${endTime}:00Z`,
+      };
+
       await dispatch(updateTask({ id: task._id, task: updatedTask })).unwrap();
+      
+      // Refresh daily summary after updating task
+      await dispatch(fetchDailySummary(dateStr)).unwrap();
+      
       setIsOpen(false);
     } catch (error: any) {
       setError(error.message || 'Failed to update task');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -119,6 +128,7 @@ export default function TaskEditDialog({ task }: TaskEditDialogProps) {
                   }}
                   className="w-full p-2 border rounded-md"
                   required
+                  disabled={loading}
                 />
               </div>
 
@@ -136,6 +146,7 @@ export default function TaskEditDialog({ task }: TaskEditDialogProps) {
                     }}
                     className="w-full p-2 border rounded-md"
                     required
+                    disabled={loading}
                   />
                 </div>
 
@@ -152,6 +163,7 @@ export default function TaskEditDialog({ task }: TaskEditDialogProps) {
                     }}
                     className="w-full p-2 border rounded-md"
                     required
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -161,15 +173,16 @@ export default function TaskEditDialog({ task }: TaskEditDialogProps) {
                   type="button"
                   onClick={() => setIsOpen(false)}
                   className="px-4 py-2 text-sm border rounded-md hover:bg-muted"
+                  disabled={loading}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
-                  disabled={!!error}
+                  disabled={loading || !!error}
                 >
-                  Save Changes
+                  {loading ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>
