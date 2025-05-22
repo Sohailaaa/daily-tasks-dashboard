@@ -12,8 +12,22 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Configure CORS
+const allowedOrigins = [
+  'http://localhost:3000',           // Local development
+  'http://13.60.148.183:3000'       // EC2 instance
+];
+
 app.use(cors({
-  origin: 'http://13.60.148.183:3000',
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
   credentials: true
 }));
 

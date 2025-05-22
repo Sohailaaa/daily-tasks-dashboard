@@ -1,9 +1,10 @@
 import axios from 'axios';
 import type { Employee } from '../store/employeeSlice';
 import type { Task } from '../store/taskSlice';
+import { getApiUrl } from '../config';
 
 const api = axios.create({
-  baseURL: 'http://13.60.148.183:5000/api',
+  baseURL: getApiUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
