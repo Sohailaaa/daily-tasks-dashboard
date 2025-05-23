@@ -23,19 +23,20 @@ That's it! The application is already running on our EC2 instance.
 ### 2. Run Locally (For Development)
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd daily-tasks-report
    ```
-
 2. **Configure Environment**
    Open `client/src/config.ts` and set:
+
    ```typescript
    export const ENV = "local";  // Use "local" for local testing
                                // Use "prod" for deployed backend
    ```
-
 3. **Install Dependencies**
+
    ```bash
    # Install server dependencies
    cd server
@@ -45,10 +46,10 @@ That's it! The application is already running on our EC2 instance.
    cd ../client
    npm install
    ```
-
 4. **Start the Application**
-   
+
    For local development (runs everything locally):
+
    ```bash
    # Terminal 1: Start the server
    cd server
@@ -64,12 +65,14 @@ That's it! The application is already running on our EC2 instance.
 ## Tech Stack
 
 ### Frontend
+
 - React with TypeScript
 - Redux for state management
 - shadcn UI components
 - Tailwind CSS for styling
 
 ### Backend
+
 - Node.js with Express
 - MongoDB for data storage
 - REST API
@@ -91,20 +94,19 @@ daily-tasks-report/
 ## Environment Options
 
 1. **Local Environment** (`ENV = "local"`)
+
+
+   - Set ENV = "local" in `client/src/config.ts`
+   - in client folder and server folder run `npm i` then `npm run dev`
    - Backend: `http://localhost:5000`
    - Frontend: `http://localhost:3000`
-   - Requires running both server and client
-   - Needs local MongoDB setup
+   - You may need to make `.env` file in server folder which contains `PORT` and `MONGO_URI` for connection to your mongo db to see the data
 
 2. **Production Environment** (`ENV = "prod"`)
+   - Set ENV = "prod" in config.ts
    - Just visit: `http://13.60.148.183:3000`
-   - Or run client locally connected to production:
-     ```bash
-     cd client
-     npm install
-     # Set ENV = "prod" in config.ts
-     npm run dev
-     ```
+
 
 ## Resources
+
 - [Tutorial Video: how to deploy MERN app on EC2 AWS](https://www.youtube.com/watch?v=ivtVu1D3Hyk)
