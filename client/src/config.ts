@@ -1,5 +1,5 @@
 // Set this to "local" for localhost or "prod" for EC2
-export let ENV = "prod";
+export let ENV = "local";
 
 export const getApiUrl = () => {
   return ENV === "local" 

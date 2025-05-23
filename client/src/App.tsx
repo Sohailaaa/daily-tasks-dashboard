@@ -28,7 +28,7 @@ function App() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2">
             <div className="bg-card rounded-lg shadow-lg p-6">
-              <h2 className="text-2xl font-semibold mb-4">Tasks</h2>
+              <h2 className="text-2xl font-semibold mb-4"></h2>
               {loading ? (
                 <div>Loading...</div>
               ) : error ? (
@@ -41,7 +41,7 @@ function App() {
           
           <div className="space-y-6">
             <div className="bg-card rounded-lg shadow-lg p-6">
-              <h2 className="text-2xl font-semibold mb-4">Add New Task</h2>
+              <h2 className="text-2xl font-semibold mb-4"></h2>
               <TaskForm selectedDate={selectedDate} />
             </div>
             
