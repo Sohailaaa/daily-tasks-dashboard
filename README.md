@@ -10,6 +10,57 @@ A full-stack application for managing employee daily tasks with time tracking ca
 - Maximum 8-hour workday enforcement
 - Responsive and modern UI using shadcn UI and Tailwind CSS
 
+## Running the Application
+
+There are two ways to use this application:
+
+### 1. Access Deployed Version (Quickest)
+
+Simply visit: [http://13.60.148.183:3000](http://13.60.148.183:3000)
+
+That's it! The application is already running on our EC2 instance.
+
+### 2. Run Locally (For Development)
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd daily-tasks-report
+   ```
+
+2. **Configure Environment**
+   Open `client/src/config.ts` and set:
+   ```typescript
+   export const ENV = "local";  // Use "local" for local testing
+                               // Use "prod" for deployed backend
+   ```
+
+3. **Install Dependencies**
+   ```bash
+   # Install server dependencies
+   cd server
+   npm install
+
+   # Install client dependencies
+   cd ../client
+   npm install
+   ```
+
+4. **Start the Application**
+   
+   For local development (runs everything locally):
+   ```bash
+   # Terminal 1: Start the server
+   cd server
+   npm run dev
+
+   # Terminal 2: Start the client
+   cd client
+   npm run dev
+   ```
+
+   The application will be available at `http://localhost:3000`
+
 ## Tech Stack
 
 ### Frontend
@@ -26,7 +77,7 @@ A full-stack application for managing employee daily tasks with time tracking ca
 ## Prerequisites
 
 - Node.js (v18 or higher)
-- MongoDB
+- MongoDB (for local development only)
 - npm or yarn
 
 ## Project Structure
@@ -37,64 +88,23 @@ daily-tasks-report/
 └── server/              # Node.js backend
 ```
 
-## Setup Instructions
+## Environment Options
 
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   # Install backend dependencies
-   cd server
-   npm install
+1. **Local Environment** (`ENV = "local"`)
+   - Backend: `http://localhost:5000`
+   - Frontend: `http://localhost:3000`
+   - Requires running both server and client
+   - Needs local MongoDB setup
 
-   # Install frontend dependencies
-   cd ../client
-   npm install
-   ```
+2. **Production Environment** (`ENV = "prod"`)
+   - Just visit: `http://13.60.148.183:3000`
+   - Or run client locally connected to production:
+     ```bash
+     cd client
+     npm install
+     # Set ENV = "prod" in config.ts
+     npm run dev
+     ```
 
-3. Configure environment variables:
-   - Create `.env` file in server directory
-   - Add MongoDB connection string and other configurations
-
-4. Start the application:
-   ```bash
-   # Start backend server
-   cd server
-   npm run dev
-
-   # Start frontend development server
-   cd ../client
-   npm run dev
-   ```
-
-5. Access the application at `http://localhost:5173`
-
-## API Endpoints
-
-- `GET /api/tasks` - Get all tasks
-- `POST /api/tasks` - Create new task
-- `PUT /api/tasks/:id` - Update task
-- `DELETE /api/tasks/:id` - Delete task
-- `GET /api/tasks/summary/:date` - Get daily summary
-
-## Data Models
-
-### Task
-```typescript
-interface Task {
-  id: string;
-  employeeId: string;
-  description: string;
-  from: Date;
-  to: Date;
-}
-```
-
-### DailySummary
-```typescript
-interface DailySummary {
-  date: string;
-  totalHours: number;
-  remainingHours: number;
-  tasks: Task[];
-}
-``` 
+## Resources
+- [Tutorial Video: how to deploy MERN app on EC2 AWS](https://www.youtube.com/watch?v=ivtVu1D3Hyk)
