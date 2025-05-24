@@ -10,58 +10,6 @@ A full-stack application for managing employee daily tasks with time tracking ca
 - Maximum 8-hour workday enforcement
 - Responsive and modern UI using shadcn UI and Tailwind CSS
 
-## Running the Application
-
-There are two ways to use this application:
-
-### 1. Access Deployed Version (Quickest)
-
-Simply visit: [http://13.60.148.183:3000](http://13.60.148.183:3000)
-
-That's it! The application is already running on our EC2 instance.
-
-### 2. Run Locally (For Development)
-
-1. **Clone the repository**
-
-   ```bash
-   git clone <repository-url>
-   cd daily-tasks-report
-   ```
-2. **Configure Environment**
-   Open `client/src/config.ts` and set:
-
-   ```typescript
-   export const ENV = "local";  // Use "local" for local testing
-                               // Use "prod" for deployed backend
-   ```
-3. **Install Dependencies**
-
-   ```bash
-   # Install server dependencies
-   cd server
-   npm install
-
-   # Install client dependencies
-   cd ../client
-   npm install
-   ```
-4. **Start the Application**
-
-   For local development (runs everything locally):
-
-   ```bash
-   # Terminal 1: Start the server
-   cd server
-   npm run dev
-
-   # Terminal 2: Start the client
-   cd client
-   npm run dev
-   ```
-
-   The application will be available at `http://localhost:3000`
-
 ## Tech Stack
 
 ### Frontend
@@ -91,7 +39,7 @@ daily-tasks-report/
 └── server/              # Node.js backend
 ```
 
-## Environment Options
+## Running Applicatioin 
 
 1. **Local Environment** (`ENV = "local"`)
 
@@ -103,9 +51,8 @@ daily-tasks-report/
    - You may need to make `.env` file in server folder which contains `PORT` and `MONGO_URI` for connection to your mongo db to see the data
 
 2. **Production Environment** (`ENV = "prod"`)
-   - Set ENV = "prod" in config.ts
    - Just visit: `http://13.60.148.183:3000`
-
+ where `13.60.148.183` is the EC2 instance on which app deployed 
 
 ## Resources
 
